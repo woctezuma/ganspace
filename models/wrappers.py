@@ -104,6 +104,7 @@ class StyleGAN2(BaseModel):
 
         # Image widths
         configs = {
+            'steam': 256,
             # Converted NVIDIA official
             'ffhq': 1024,
             'car': 512,
@@ -137,6 +138,7 @@ class StyleGAN2(BaseModel):
     # URLs created with https://sites.google.com/site/gdocs2direct/
     def download_checkpoint(self, outfile):
         checkpoints = {
+            'steam': 'https://drive.google.com/uc?export=download&id=1HXczmPE4PMBbhrPOshshnS0KFI4J6jbC',
             'horse': 'https://drive.google.com/uc?export=download&id=18SkqWAkgt0fIwDEf2pqeaenNi4OoCo-0',
             'ffhq': 'https://drive.google.com/uc?export=download&id=1FJRwzAkV-XWbxgTwxEmEACvuqF5DsBiV',
             'church': 'https://drive.google.com/uc?export=download&id=1HFM694112b_im01JT7wop0faftw9ty5g',
@@ -153,8 +155,12 @@ class StyleGAN2(BaseModel):
     def load_model(self):
         checkpoint_root = os.environ.get('GANCONTROL_CHECKPOINT_DIR', Path(__file__).parent / 'checkpoints')
         checkpoint = Path(checkpoint_root) / f'stylegan2/stylegan2_{self.outclass}_{self.resolution}.pt'
+        if self.outclass == 'steam':
+            channel_multiplier = 1 # config-e
+        else:
+            channel_multiplier = 2 # config-f
         
-        self.model = stylegan2.Generator(self.resolution, 512, 8).to(self.device)
+        self.model = stylegan2.Generator(self.resolution, 512, 8, channel_multiplier=channel_multiplier).to(self.device)
 
         if not checkpoint.is_file():
             os.makedirs(checkpoint.parent, exist_ok=True)
